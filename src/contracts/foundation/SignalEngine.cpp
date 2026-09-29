@@ -6,11 +6,9 @@
 #include <limits>
 #include <variant>
 
-namespace xauusd::sovereign
-{
+namespace xauusd::sovereign {
 
-namespace
-{
+namespace {
 
 bool eligible(const EligibilityResult& e, StrategyFamily f)
 {
@@ -30,47 +28,37 @@ double getd(const FeatureSnapshot& s, const char* name)
         return std::numeric_limits<double>::quiet_NaN();
 
 
-    /*
-        FeatureValue::storage() returns the internal variant.
-        Access through the returned object directly.
-    */
-
-    const auto& storage = it->second.storage();
+    auto storage = it->second.storage();
 
 
-    return std::visit(
-        [](const auto& value) -> double
-        {
-            using T = std::decay_t<decltype(value)>;
+    if (std::holds_alternative<double>(storage))
+    {
+        return std::get<double>(storage);
+    }
 
-            if constexpr (std::is_same_v<T, double>)
-            {
-                return value;
-            }
-            else if constexpr (std::is_same_v<T, float>)
-            {
-                return static_cast<double>(value);
-            }
-            else if constexpr (std::is_same_v<T, int>)
-            {
-                return static_cast<double>(value);
-            }
-            else if constexpr (std::is_same_v<T, std::int64_t>)
-            {
-                return static_cast<double>(value);
-            }
-            else
-            {
-                return std::numeric_limits<double>::quiet_NaN();
-            }
 
-        },
-        storage
-    );
+    if (std::holds_alternative<float>(storage))
+    {
+        return static_cast<double>(std::get<float>(storage));
+    }
+
+
+    if (std::holds_alternative<int>(storage))
+    {
+        return static_cast<double>(std::get<int>(storage));
+    }
+
+
+    if (std::holds_alternative<std::int64_t>(storage))
+    {
+        return static_cast<double>(std::get<std::int64_t>(storage));
+    }
+
+
+    return std::numeric_limits<double>::quiet_NaN();
 }
 
 }
-
 
 
 Signal SignalEngine::generate(
@@ -84,10 +72,8 @@ Signal SignalEngine::generate(
 
     out.trigger_timeframe = f.timeframe;
     out.triggered_at = f.computed_at;
-
     out.strategy = StrategyFamily::NONE;
     out.direction = SignalDirection::NONE;
-
 
 
     const double close = getd(f,"close");
@@ -97,24 +83,19 @@ Signal SignalEngine::generate(
     const double atr   = getd(f,"atr");
 
 
-
     if (!std::isfinite(close) ||
-        !std::isfinite(fast)  ||
-        !std::isfinite(slow)  ||
+        !std::isfinite(fast) ||
+        !std::isfinite(slow) ||
         !std::isfinite(slope) ||
-        !std::isfinite(atr)   ||
+        !std::isfinite(atr) ||
         atr <= 0)
     {
         return out;
     }
 
 
-
     const bool tc =
-        eligible(
-            e,
-            StrategyFamily::TREND_CONTINUATION
-        );
+        eligible(e, StrategyFamily::TREND_CONTINUATION);
 
 
 
@@ -123,81 +104,54 @@ Signal SignalEngine::generate(
         s.is_bullish &&
         slope > 0 &&
         close > slow &&
-        std::abs(close - fast) <= 0.75 * atr &&
+        std::abs(close-fast) <= 0.75 * atr &&
         s.last_swing_low > 0 &&
         close > s.last_swing_low)
     {
-
         out.direction = SignalDirection::LONG;
-
-        out.strategy =
-            StrategyFamily::TREND_CONTINUATION;
-
+        out.strategy = StrategyFamily::TREND_CONTINUATION;
         out.entry_reference = close;
-
-        out.invalidating_price =
-            s.last_swing_low;
-
-        out.rationale =
-            "trend continuation long";
-
+        out.invalidating_price = s.last_swing_low;
+        out.rationale = "trend continuation long";
     }
-    else if (
-        tc &&
-        r.regime == RegimeType::TREND_DOWN &&
-        !s.is_bullish &&
-        slope < 0 &&
-        close < slow &&
-        std::abs(close - fast) <= 0.75 * atr &&
-        s.last_swing_high > 0 &&
-        close < s.last_swing_high)
+    else if (tc &&
+             r.regime == RegimeType::TREND_DOWN &&
+             !s.is_bullish &&
+             slope < 0 &&
+             close < slow &&
+             std::abs(close-fast) <= 0.75 * atr &&
+             s.last_swing_high > 0 &&
+             close < s.last_swing_high)
     {
-
         out.direction = SignalDirection::SHORT;
-
-        out.strategy =
-            StrategyFamily::TREND_CONTINUATION;
-
+        out.strategy = StrategyFamily::TREND_CONTINUATION;
         out.entry_reference = close;
-
-        out.invalidating_price =
-            s.last_swing_high;
-
-        out.rationale =
-            "trend continuation short";
+        out.invalidating_price = s.last_swing_high;
+        out.rationale = "trend continuation short";
     }
 
 
 
     if (out.direction != SignalDirection::NONE)
     {
-
         out.decision_id =
             detail::make_id(
                 "decision",
-                static_cast<std::uint64_t>(
-                    out.triggered_at.value()),
-                static_cast<std::uint64_t>(
-                    out.trigger_timeframe),
-                static_cast<std::uint64_t>(
-                    out.strategy)
+                static_cast<std::uint64_t>(out.triggered_at.value()),
+                static_cast<std::uint64_t>(out.trigger_timeframe),
+                static_cast<std::uint64_t>(out.strategy)
             );
 
 
         out.signal_id =
             detail::make_id(
                 "signal",
-                static_cast<std::uint64_t>(
-                    out.triggered_at.value()),
-                static_cast<std::uint64_t>(
-                    out.trigger_timeframe),
-                static_cast<std::uint64_t>(
-                    out.direction),
-                static_cast<std::uint64_t>(
-                    out.strategy)
+                static_cast<std::uint64_t>(out.triggered_at.value()),
+                static_cast<std::uint64_t>(out.trigger_timeframe),
+                static_cast<std::uint64_t>(out.direction),
+                static_cast<std::uint64_t>(out.strategy)
             );
     }
-
 
 
     return out;
