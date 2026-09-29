@@ -4,6 +4,9 @@
 #include "Timestamp.h"
 #include "Timeframe.h"
 #include "DataQualityState.h"
+#include "FeatureKey.h"
+#include "FeatureValue.h"
+#include <map>
 
 namespace xauusd::sovereign
 {
@@ -11,6 +14,8 @@ namespace xauusd::sovereign
 struct FeatureSnapshot
 {
     EntityId snapshot_id{};
+
+    EntityId source_bar_id{};
 
     Timeframe timeframe{Timeframe::M1};
 
@@ -35,6 +40,8 @@ struct FeatureSnapshot
     bool has_features{false};
 
     bool is_valid{false};
+
+    std::map<FeatureKey, FeatureValue> features{};
 };
 
 }

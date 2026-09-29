@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef ERROR
+#undef ERROR
+#endif
+
 namespace xauusd::sovereign
 {
 
@@ -11,7 +15,11 @@ enum class ServiceState
     DEGRADED,
     STOPPED,
     FAILED,
-    ERROR
+    ERROR,
+    ONLINE,
+    OFFLINE,
+    BLOCKED,
+    PAUSED
 };
 
 }

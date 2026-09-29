@@ -1,4 +1,6 @@
 #pragma once
+#include "EntityId.h"
+#include "ServiceState.h"
 #include "HealthSnapshot.h"
 #include <vector>
 namespace xauusd::sovereign {

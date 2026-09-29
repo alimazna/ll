@@ -1,29 +1,53 @@
 #pragma once
 
+#include "EntityId.h"
+#include "ServiceState.h"
 #include "FreshnessState.h"
 #include "Timestamp.h"
+#include "Version.h"
 
 namespace xauusd::sovereign
 {
 
 struct HealthSnapshot
 {
-    FreshnessState freshness{FreshnessState::Unknown};
+    EntityId        service_id{};
 
-    Timestamp observed{};
+    ServiceState    service_state{ServiceState::UNKNOWN};
 
-    Timestamp policy{};
+    FreshnessState  freshness{FreshnessState::Unknown};
 
-    constexpr HealthSnapshot() = default;
+    Timestamp       observed{};
 
-    constexpr HealthSnapshot(
+    Timestamp       policy{};
+
+    Version         version{};
+
+    HealthSnapshot() = default;
+
+    // Legacy 3-arg constructor (freshness, observed, policy)
+    HealthSnapshot(
         FreshnessState freshness_value,
-        Timestamp observed_value,
-        Timestamp policy_value)
-        :
-        freshness(freshness_value),
-        observed(observed_value),
-        policy(policy_value)
+        Timestamp      observed_value,
+        Timestamp      policy_value)
+        : freshness(freshness_value)
+        , observed(observed_value)
+        , policy(policy_value)
+    {
+    }
+
+    // Full 5-arg constructor used by RuntimeEngine
+    HealthSnapshot(
+        EntityId       service_id_value,
+        ServiceState   service_state_value,
+        FreshnessState freshness_value,
+        Timestamp      observed_value,
+        Version        version_value)
+        : service_id(service_id_value)
+        , service_state(service_state_value)
+        , freshness(freshness_value)
+        , observed(observed_value)
+        , version(version_value)
     {
     }
 };

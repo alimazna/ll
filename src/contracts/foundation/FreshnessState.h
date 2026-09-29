@@ -8,7 +8,11 @@ enum class FreshnessState
     Unknown,
     Fresh,
     Stale,
-    Expired
+    Expired,
+    MISSING,
+    FRESH,
+    AGING,
+    STALE
 };
 
 }
