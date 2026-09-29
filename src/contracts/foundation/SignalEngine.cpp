@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 #include <variant>
 
@@ -32,34 +33,22 @@ double getd(
         return std::numeric_limits<double>::quiet_NaN();
 
 
-    return std::visit(
-        [](const auto& value) -> double
-        {
-            using T = std::decay_t<decltype(value)>;
+    const auto& storage = it->second.storage();
 
-            if constexpr (std::is_same_v<T, double>)
-            {
-                return value;
-            }
-            else if constexpr (std::is_same_v<T, float>)
-            {
-                return static_cast<double>(value);
-            }
-            else if constexpr (std::is_same_v<T, int>)
-            {
-                return static_cast<double>(value);
-            }
-            else if constexpr (std::is_same_v<T, std::int64_t>)
-            {
-                return static_cast<double>(value);
-            }
-            else
-            {
-                return std::numeric_limits<double>::quiet_NaN();
-            }
-        },
-        it->second.storage()
-    );
+
+    if (const auto* value = std::get_if<double>(&storage))
+        return *value;
+
+
+    if (const auto* value = std::get_if<std::int64_t>(&storage))
+        return static_cast<double>(*value);
+
+
+    if (const auto* value = std::get_if<bool>(&storage))
+        return *value ? 1.0 : 0.0;
+
+
+    return std::numeric_limits<double>::quiet_NaN();
 }
 
 }
@@ -120,8 +109,7 @@ Signal SignalEngine::generate(
         out.entry_reference = close;
         out.invalidating_price = s.last_swing_low;
 
-        out.rationale =
-            "trend continuation long";
+        out.rationale = "trend continuation long";
     }
     else if (tc &&
              r.regime == RegimeType::TREND_DOWN &&
@@ -138,8 +126,7 @@ Signal SignalEngine::generate(
         out.entry_reference = close;
         out.invalidating_price = s.last_swing_high;
 
-        out.rationale =
-            "trend continuation short";
+        out.rationale = "trend continuation short";
     }
 
 
