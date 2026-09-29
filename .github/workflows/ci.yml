@@ -1,54 +1,58 @@
+```yaml
 name: XAUUSD Sovereign CI
 
 on:
   push:
     branches:
       - main
+      - master
+
   pull_request:
     branches:
       - main
+      - master
 
 jobs:
 
-  build-and-test:
+  build-linux:
 
+    name: Linux Build And Test
     runs-on: ubuntu-latest
-
-    env:
-      TELEGRAM_OPERATIONS_TOKEN: ${{ secrets.TELEGRAM_OPERATIONS_TOKEN }}
-      TELEGRAM_GOVERNANCE_TOKEN: ${{ secrets.TELEGRAM_GOVERNANCE_TOKEN }}
-      TELEGRAM_OPERATIONS_CHAT_ID: ${{ secrets.TELEGRAM_OPERATIONS_CHAT_ID }}
-      TELEGRAM_GOVERNANCE_CHAT_ID: ${{ secrets.TELEGRAM_GOVERNANCE_CHAT_ID }}
 
     steps:
 
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
+          sudo apt update
+          sudo apt install -y \
+            build-essential \
             cmake \
             ninja-build \
-            build-essential \
-            libcurl4-openssl-dev
+            curl \
+            libcurl4-openssl-dev \
+            python3
 
 
       - name: Configure CMake
         run: |
           cmake -S . -B build \
             -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_BUILD_TYPE=Release \
+            -DXAUUSD_BUILD_UI=OFF \
+            -DGLFW_BUILD_WAYLAND=OFF \
+            -DGLFW_BUILD_X11=OFF
 
 
-      - name: Build project
+      - name: Build
         run: |
           cmake --build build --parallel
 
 
-      - name: Run tests
+      - name: Run Tests
         run: |
           ctest \
             --test-dir build \
@@ -56,52 +60,58 @@ jobs:
             --parallel 2
 
 
-      - name: Upload build artifacts
-        if: success()
+      - name: Upload Linux Build
         uses: actions/upload-artifact@v4
         with:
-          name: xauusd-build
-          path: build/
-
+          name: xauusd-linux-release
+          path: |
+            build/
+            
 
   build-windows:
 
+    name: Windows Release Build
     runs-on: windows-latest
-
-    env:
-      TELEGRAM_OPERATIONS_TOKEN: ${{ secrets.TELEGRAM_OPERATIONS_TOKEN }}
-      TELEGRAM_GOVERNANCE_TOKEN: ${{ secrets.TELEGRAM_GOVERNANCE_TOKEN }}
-      TELEGRAM_OPERATIONS_CHAT_ID: ${{ secrets.TELEGRAM_OPERATIONS_CHAT_ID }}
-      TELEGRAM_GOVERNANCE_CHAT_ID: ${{ secrets.TELEGRAM_GOVERNANCE_CHAT_ID }}
 
     steps:
 
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
 
-      - name: Configure CMake
+      - name: Install Dependencies
         run: |
-          cmake -S . -B build
+          choco install cmake ninja -y
 
 
-      - name: Build Windows Release
+      - name: Configure CMake
+        shell: pwsh
+        run: |
+          cmake -S . -B build `
+            -G "Visual Studio 17 2022" `
+            -A x64 `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DXAUUSD_BUILD_UI=OFF
+
+
+      - name: Build
         run: |
           cmake --build build --config Release --parallel
 
 
-      - name: Run Windows tests
+      - name: Run Tests
         run: |
           ctest `
             --test-dir build `
             -C Release `
-            --output-on-failure
+            --output-on-failure `
+            --parallel 2
 
 
       - name: Upload Windows Release
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: xauusd-windows-release
           path: |
             build/Release/
+```
