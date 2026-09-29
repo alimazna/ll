@@ -27,15 +27,14 @@ double getd(const FeatureSnapshot& s, const char* n)
     if (it == s.features.end())
         return std::numeric_limits<double>::quiet_NaN();
 
-
-    auto value = it->second.storage();
-
-
-    if (std::holds_alternative<double>(value))
-        return std::get<double>(value);
-
-
-    return std::numeric_limits<double>::quiet_NaN();
+    try
+    {
+        return std::get<double>(it->second.storage());
+    }
+    catch (const std::bad_variant_access&)
+    {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
 }
 
 }
