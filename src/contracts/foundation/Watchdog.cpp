@@ -17,7 +17,7 @@ bool Watchdog::observe(
         adapter_alive &&
         queue_depth <= max_queue &&
         expected == actual &&
-        actual != ServiceState::Failed;
+        actual != ServiceState::ERROR;
 
     return healthy_;
 }

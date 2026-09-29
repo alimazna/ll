@@ -5,10 +5,11 @@ namespace xauusd::sovereign
 
 enum class DataQualityState
 {
-    Unknown,
-    Valid,
-    Warning,
-    Invalid
+    UNKNOWN_VALUE,
+    VALID,
+    INVALID,
+    DUPLICATE,
+    OUT_OF_ORDER
 };
 
 }

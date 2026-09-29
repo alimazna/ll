@@ -1,14 +1,14 @@
 #pragma once
 
-namespace xauusd::sovereign
-{
+namespace xauusd::sovereign {
 
 enum class ValidationOutcome
 {
-    Unknown,
-    Passed,
-    Failed,
-    Warning
+    UNKNOWN_VALUE,
+    ACCEPTED,
+    REJECTED,
+    PARTIAL,
+    QUARANTINED
 };
 
 }
