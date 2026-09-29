@@ -17,9 +17,7 @@ jobs:
   build-linux:
 
     name: Linux Build And Test
-
     runs-on: ubuntu-latest
-
 
     steps:
 
@@ -37,16 +35,7 @@ jobs:
             ninja-build \
             curl \
             libcurl4-openssl-dev \
-            python3 \
-            pkg-config \
-            libx11-dev \
-            libxrandr-dev \
-            libxinerama-dev \
-            libxcursor-dev \
-            libxi-dev \
-            libwayland-dev \
-            wayland-protocols \
-            wayland-scanner
+            python3
 
 
       - name: Configure CMake
@@ -54,8 +43,7 @@ jobs:
           cmake -S . -B build \
             -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
-            -DXAUUSD_BUILD_UI=OFF \
-            -DGLFW_BUILD_WAYLAND=OFF
+            -DXAUUSD_BUILD_UI=OFF
 
 
       - name: Build
@@ -71,11 +59,11 @@ jobs:
             --parallel 2
 
 
-      - name: Upload Linux Build
+      - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
 
         with:
-          name: xauusd-linux-release
+          name: XAUUSD-Sovereign-Linux
 
           path: |
             build/
@@ -85,7 +73,6 @@ jobs:
   build-windows:
 
     name: Windows Release Build
-
     runs-on: windows-latest
 
 
@@ -97,40 +84,41 @@ jobs:
 
 
       - name: Install Dependencies
-
         shell: pwsh
-
         run: |
-          choco install cmake ninja -y
+
+          choco install cmake ninja vcpkg -y
+
+          vcpkg install curl:x64-windows
 
 
 
       - name: Configure CMake
-
         shell: pwsh
-
         run: |
+
           cmake -S . -B build `
             -A x64 `
             -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
             -DXAUUSD_BUILD_UI=OFF
 
 
 
       - name: Build
-
         shell: pwsh
-
         run: |
-          cmake --build build --config Release --parallel
+
+          cmake --build build `
+            --config Release `
+            --parallel
 
 
 
       - name: Run Tests
-
         shell: pwsh
-
         run: |
+
           ctest `
             --test-dir build `
             -C Release `
@@ -139,13 +127,24 @@ jobs:
 
 
 
-      - name: Upload Windows Release
+      - name: Prepare Release Package
+        shell: pwsh
+        run: |
 
+          mkdir release
+
+          Copy-Item build/Release/*.exe release/ -ErrorAction SilentlyContinue
+
+          Copy-Item build/Release/*.dll release/ -ErrorAction SilentlyContinue
+
+
+
+      - name: Upload Windows Release
         uses: actions/upload-artifact@v4
 
         with:
 
-          name: xauusd-windows-release
+          name: XAUUSD-Sovereign-Windows
 
           path: |
-            build/Release/
+            release/
