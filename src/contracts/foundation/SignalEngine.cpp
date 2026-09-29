@@ -1,5 +1,6 @@
 #include "SignalEngine.h"
 #include "EngineIdentity.h"
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -27,7 +28,7 @@ double getd(const FeatureSnapshot& s, const char* n)
         return std::numeric_limits<double>::quiet_NaN();
 
 
-    const auto& value = it->second.storage();
+    auto value = it->second.storage();
 
 
     if (std::holds_alternative<double>(value))
@@ -54,11 +55,11 @@ Signal SignalEngine::generate(
     out.direction = SignalDirection::NONE;
 
 
-    const double close = getd(f,"close");
-    const double fast  = getd(f,"ema_fast");
-    const double slow  = getd(f,"ema_slow");
-    const double slope = getd(f,"ema_slope");
-    const double atr   = getd(f,"atr");
+    const double close = getd(f, "close");
+    const double fast  = getd(f, "ema_fast");
+    const double slow  = getd(f, "ema_slow");
+    const double slope = getd(f, "ema_slope");
+    const double atr   = getd(f, "atr");
 
 
     if (!std::isfinite(close) ||
@@ -81,7 +82,7 @@ Signal SignalEngine::generate(
         s.is_bullish &&
         slope > 0 &&
         close > slow &&
-        std::abs(close-fast) <= 0.75 * atr &&
+        std::abs(close - fast) <= 0.75 * atr &&
         s.last_swing_low > 0 &&
         close > s.last_swing_low)
     {
@@ -96,7 +97,7 @@ Signal SignalEngine::generate(
              !s.is_bullish &&
              slope < 0 &&
              close < slow &&
-             std::abs(close-fast) <= 0.75 * atr &&
+             std::abs(close - fast) <= 0.75 * atr &&
              s.last_swing_high > 0 &&
              close < s.last_swing_high)
     {
