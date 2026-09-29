@@ -21,17 +21,17 @@ struct HealthSnapshot
     HealthSnapshot(
         const EntityId& id,
         ServiceState state,
-        FreshnessState freshness_state,
+        FreshnessState freshness_value,
         const Timestamp& observed,
         const Version& policy)
         :
         service_id(id),
         service_state(state),
-        freshness(freshness_state),
+        freshness(freshness_value),
         observed_at(observed),
         policy_version(policy)
     {
     }
 };
 
-} // namespace xauusd::sovereign
+}

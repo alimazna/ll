@@ -13,4 +13,4 @@ enum class FreshnessState : std::uint8_t
     UNKNOWN
 };
 
-} // namespace xauusd::sovereign
+}
