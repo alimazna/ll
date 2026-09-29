@@ -1,19 +1,16 @@
 #pragma once
 
-#include <cstdint>
+namespace xauusd::sovereign
+{
 
-namespace xauusd::sovereign {
-
-enum class ServiceState : std::uint8_t {
-    STARTING,
-    ONLINE,
-    DEGRADED,
-    OFFLINE,
-    RECOVERING,
-    PAUSED,
-    BLOCKED,
-    ERROR,
-    UNKNOWN_VALUE
+enum class ServiceState
+{
+    Unknown,
+    Starting,
+    Running,
+    Degraded,
+    Stopped,
+    Failed
 };
 
-} // namespace xauusd::sovereign
+}

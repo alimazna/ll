@@ -1,16 +1,14 @@
 #pragma once
 
-#include <cstdint>
-
-namespace xauusd::sovereign {
-
-enum class FreshnessState : std::uint8_t
+namespace xauusd::sovereign
 {
-    FRESH,
-    AGING,
-    STALE,
-    MISSING,
-    UNKNOWN
+
+enum class FreshnessState
+{
+    Unknown,
+    Fresh,
+    Stale,
+    Expired
 };
 
 }

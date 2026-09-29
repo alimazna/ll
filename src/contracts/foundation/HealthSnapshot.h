@@ -1,35 +1,29 @@
 #pragma once
 
-#include "EntityId.h"
-#include "ServiceState.h"
 #include "FreshnessState.h"
 #include "Timestamp.h"
-#include "Version.h"
 
-namespace xauusd::sovereign {
+namespace xauusd::sovereign
+{
 
 struct HealthSnapshot
 {
-    EntityId service_id{};
-    ServiceState service_state{};
-    FreshnessState freshness{};
-    Timestamp observed_at{};
-    Version policy_version{};
+    FreshnessState freshness{FreshnessState::Unknown};
 
-    HealthSnapshot() = default;
+    Timestamp observed{};
 
-    HealthSnapshot(
-        const EntityId& id,
-        ServiceState state,
+    Timestamp policy{};
+
+    constexpr HealthSnapshot() = default;
+
+    constexpr HealthSnapshot(
         FreshnessState freshness_value,
-        const Timestamp& observed,
-        const Version& policy)
+        Timestamp observed_value,
+        Timestamp policy_value)
         :
-        service_id(id),
-        service_state(state),
         freshness(freshness_value),
-        observed_at(observed),
-        policy_version(policy)
+        observed(observed_value),
+        policy(policy_value)
     {
     }
 };

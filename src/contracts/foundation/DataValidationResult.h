@@ -1,28 +1,26 @@
 #pragma once
 
-#include "DataQualityState.h"
-#include "Timestamp.h"
 #include "ValidationOutcome.h"
 
-#include <string>
-#include <utility>
+namespace xauusd::sovereign
+{
 
-namespace xauusd::sovereign {
+struct DataValidationResult
+{
+    ValidationOutcome outcome{ValidationOutcome::Unknown};
 
-struct DataValidationResult {
-    ValidationOutcome  outcome;
-    DataQualityState   quality;
-    std::string        reason;
-    Timestamp          observed_at;
+    constexpr DataValidationResult() = default;
 
-    DataValidationResult() = default;
+    constexpr explicit DataValidationResult(
+        ValidationOutcome value)
+        : outcome(value)
+    {
+    }
 
-    DataValidationResult(ValidationOutcome outcome,
-                         DataQualityState quality,
-                         std::string reason,
-                         Timestamp observed_at)
-        : outcome(outcome), quality(quality),
-          reason(std::move(reason)), observed_at(observed_at) {}
+    constexpr bool passed() const
+    {
+        return outcome == ValidationOutcome::Passed;
+    }
 };
 
-} // namespace xauusd::sovereign
+}

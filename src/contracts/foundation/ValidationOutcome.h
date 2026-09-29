@@ -1,16 +1,14 @@
 #pragma once
 
-#include <cstdint>
+namespace xauusd::sovereign
+{
 
-namespace xauusd::sovereign {
-
-enum class ValidationOutcome : std::uint8_t {
-    ACCEPTED,
-    REJECTED,
-    QUARANTINED,
-    PARTIAL,
-    UNKNOWN,
-    UNKNOWN_VALUE
+enum class ValidationOutcome
+{
+    Unknown,
+    Passed,
+    Failed,
+    Warning
 };
 
-} // namespace xauusd::sovereign
+}
