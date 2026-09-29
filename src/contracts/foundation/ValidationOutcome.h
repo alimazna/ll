@@ -9,7 +9,8 @@ enum class ValidationOutcome : std::uint8_t {
     REJECTED,
     QUARANTINED,
     PARTIAL,
-    UNKNOWN
+    UNKNOWN,
+    UNKNOWN_VALUE
 };
 
 } // namespace xauusd::sovereign
