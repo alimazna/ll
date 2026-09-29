@@ -2,49 +2,106 @@ name: XAUUSD Sovereign CI
 
 on:
   push:
-    branches: [ "**" ]
+    branches:
+      - main
   pull_request:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+    branches:
+      - main
 
 jobs:
+
   build-and-test:
+
     runs-on: ubuntu-latest
 
+    env:
+      TELEGRAM_OPERATIONS_TOKEN: ${{ secrets.TELEGRAM_OPERATIONS_TOKEN }}
+      TELEGRAM_GOVERNANCE_TOKEN: ${{ secrets.TELEGRAM_GOVERNANCE_TOKEN }}
+      TELEGRAM_OPERATIONS_CHAT_ID: ${{ secrets.TELEGRAM_OPERATIONS_CHAT_ID }}
+      TELEGRAM_GOVERNANCE_CHAT_ID: ${{ secrets.TELEGRAM_GOVERNANCE_CHAT_ID }}
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
 
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build pkg-config libcurl4-openssl-dev python3
+          sudo apt-get install -y \
+            cmake \
+            ninja-build \
+            build-essential \
+            libcurl4-openssl-dev
 
-      - name: Configure
+
+      - name: Configure CMake
         run: |
           cmake -S . -B build \
             -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DXAUUSD_BUILD_UI=OFF
+            -DCMAKE_BUILD_TYPE=Release
 
-      - name: Build
-        run: cmake --build build --parallel
 
-      - name: Test
-        run: ctest --test-dir build --output-on-failure --parallel 2
+      - name: Build project
+        run: |
+          cmake --build build --parallel
+
+
+      - name: Run tests
+        run: |
+          ctest \
+            --test-dir build \
+            --output-on-failure \
+            --parallel 2
+
 
       - name: Upload build artifacts
         if: success()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: xauusd-build
+          path: build/
+
+
+  build-windows:
+
+    runs-on: windows-latest
+
+    env:
+      TELEGRAM_OPERATIONS_TOKEN: ${{ secrets.TELEGRAM_OPERATIONS_TOKEN }}
+      TELEGRAM_GOVERNANCE_TOKEN: ${{ secrets.TELEGRAM_GOVERNANCE_TOKEN }}
+      TELEGRAM_OPERATIONS_CHAT_ID: ${{ secrets.TELEGRAM_OPERATIONS_CHAT_ID }}
+      TELEGRAM_GOVERNANCE_CHAT_ID: ${{ secrets.TELEGRAM_GOVERNANCE_CHAT_ID }}
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build
+
+
+      - name: Build Windows Release
+        run: |
+          cmake --build build --config Release --parallel
+
+
+      - name: Run Windows tests
+        run: |
+          ctest `
+            --test-dir build `
+            -C Release `
+            --output-on-failure
+
+
+      - name: Upload Windows Release
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xauusd-windows-release
           path: |
-            build/CTestTestfile.cmake
-            build/**/test_*
-            build/**/Phase*IntegrationTests
-          if-no-files-found: warn
+            build/Release/
